@@ -23,6 +23,7 @@ The app already does most of what I want, but it is still in active development 
 - Track Goodreads review progress at series level
 - Track Audible and Goodreads review data
 - Store per-track or per-book review information where needed
+- Automatically create and scan a default audiobook folder in the home directory
 
 ## Review tracking
 
@@ -37,6 +38,20 @@ The app can track review progress from both Goodreads and Audible.
 Most existing tools I tried did not fit the way I manage audiobooks.
 
 Some feel more like media players than library managers. This project is focused on library overview, metadata control, series tracking, and clean presentation.
+
+## Default library location
+
+When the app starts, it automatically creates a folder called `audiobook` in your home folder if it does not already exist.
+
+Default path:
+
+```text
+~/audiobook
+````
+
+This is the default folder the app scans automatically on startup.
+
+You can also scan audiobook files from other locations, but at the moment the app does not remember custom scan locations between launches. Right now the default `~/audiobook` folder is the one that will always be scanned automatically when the app starts.
 
 ## Library structure
 
@@ -56,7 +71,7 @@ Library Root/
 └── Another Author/
     └── Album or Series/
         └── audiobook.mp3
-````
+```
 
 In other words:
 
@@ -92,6 +107,7 @@ Things I still want to add:
 * Track-based statistics
 * Better long-term stats than Goodreads
 * Bigger album cards so long audiobook names do not get cut off as much
+* Remember custom scan locations instead of only defaulting back to `~/audiobook`
 * A new name for the project
 * Testing on more systems
 
@@ -102,6 +118,8 @@ Things I still want to add:
 * The project name will change later
 * Some features and views are still built around older music-style naming and need cleanup
 * Long album or audiobook names can still get cut off in the album card view
+* Custom scan locations are not remembered yet between launches
+* The app always falls back to scanning the default `~/audiobook` folder on startup
 
 ## Notes
 
@@ -192,5 +210,5 @@ This project is licensed under the MIT License.
 
 ```
 
-I also added the folder structure part in a way normal people can follow, and I put the album-card issue both under planned features and known limitations so nobody misses it.
+The main additions are the default `~/audiobook` folder behavior, the fact that it auto-creates and auto-scans it, and that custom scan paths are not remembered yet.
 ```
