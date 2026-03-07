@@ -48,14 +48,14 @@ The expected structure is:
 Library Root/
 ├── Author Name/
 │   ├── Album or Series Name/
-│   │   ├── book1.m4b
+│   │   ├── book1.mp3
 │   │   ├── book2.mp3
-│   │   └── cover.jpg
+│   │   └── Folder.jpg
 │   └── Another Album or Series/
-│       └── audiobook.m4b
+│       └── audiobook.mp3
 └── Another Author/
     └── Album or Series/
-        └── audiobook.m4b
+        └── audiobook.mp3
 ````
 
 In other words:
@@ -70,10 +70,10 @@ Example:
 ```text
 Library Root/
 └── Carolyn Keene/
-    └── Nancy Drew Diaries 01 - Curse of the Arctic Star/
-        ├── track01.m4b
-        ├── track02.m4b
-        └── cover.jpg
+    └── Nancy Drew Diaries/
+        ├── Curse of the Arctic Star.mp3
+        ├── Strangers on a Train.mp3
+        └── Folder.jpg
 ```
 
 If the folders are not laid out like this, the app may not detect authors and albums correctly.
