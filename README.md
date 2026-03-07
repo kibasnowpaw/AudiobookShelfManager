@@ -1,3 +1,6 @@
+Use this full version instead:
+
+````md
 # BookLibConnect
 
 BookLibConnect is a personal audiobook library manager built with Python and Qt.
@@ -84,3 +87,71 @@ This does not mean the app requires the KDE desktop. It only means the Flatpak b
 ```bash
 git clone https://github.com/kibasnowpaw/BookLibConnect.git
 cd BookLibConnect
+````
+
+## Install dependencies
+
+```bash
+sudo apt update
+sudo apt install git flatpak flatpak-builder -y
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+flatpak install flathub org.kde.Sdk//6.10 org.kde.Platform//6.10 io.qt.PySide.BaseApp//6.10
+```
+
+## Build and install
+
+```bash
+rm -rf build-dir .flatpak-builder
+flatpak-builder --force-clean build-dir io.github.kibasnowpaw.BookLibConnect.json
+flatpak-builder --install --user --force-clean build-dir io.github.kibasnowpaw.BookLibConnect.json
+```
+
+## Run the app
+
+```bash
+flatpak run --user io.github.kibasnowpaw.BookLibConnect
+```
+
+## Rebuild after changes
+
+```bash
+cd ~/BookLibConnect
+rm -rf build-dir .flatpak-builder
+flatpak-builder --install --user --force-clean build-dir io.github.kibasnowpaw.BookLibConnect.json
+```
+
+## Uninstall
+
+```bash
+flatpak uninstall --user io.github.kibasnowpaw.BookLibConnect
+```
+
+## Troubleshooting
+
+If the build fails because of missing Flatpak dependencies, run the dependency install command again:
+
+```bash
+flatpak install flathub org.kde.Sdk//6.10 org.kde.Platform//6.10 io.qt.PySide.BaseApp//6.10
+```
+
+If you want to do a completely clean rebuild:
+
+```bash
+flatpak uninstall --user io.github.kibasnowpaw.BookLibConnect
+rm -rf build-dir .flatpak-builder
+flatpak-builder --force-clean build-dir io.github.kibasnowpaw.BookLibConnect.json
+flatpak-builder --install --user --force-clean build-dir io.github.kibasnowpaw.BookLibConnect.json
+```
+
+## Screenshots
+
+Screenshots can be added here later.
+
+## License
+
+This project is licensed under the MIT License.
+
+```
+
+One small thing I would also change in the actual repo later is the app name and maybe the wording in the UI from `album` and `track` toward `series`, `book`, or `file`. That would make the whole project feel less like a music tool adapted for audiobooks.
+```
