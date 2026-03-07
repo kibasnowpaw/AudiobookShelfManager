@@ -5,8 +5,8 @@ from functools import partial
 from pathlib import Path
 from typing import Optional
 
-from PySide6.QtCore import Qt, QSize, QPoint, QRect, QObject, Signal, QThread
-from PySide6.QtGui import QIcon, QPainter, QColor, QFont, QPixmap, QLinearGradient
+from PySide6.QtCore import Qt, QSize, QPoint, QObject, Signal, QThread
+from PySide6.QtGui import QIcon, QColor, QPixmap
 from PySide6.QtWidgets import (
     QFileDialog,
     QLabel,
@@ -40,14 +40,20 @@ from PySide6.QtWidgets import (
 
 from .album_expected_store import AlbumExpectedStore
 from .covers import find_cover_in_folder, find_track_sidecar_cover, get_embedded_cover_bytes
-from .debug_tools import dbg, dbg_exc, debug_call
+from .debug_tools import dbg_exc, debug_call
 from .helpers import fmt_len, fmt_mtime, fmt_size_mb, list_album_dirs, list_artist_dirs, list_tracks
 from .metadata_io import read_meta_and_length, write_metadata_to_file, embed_cover_into_file
 from .models import TrackMeta
 from .naming import rename_track_file
 from .qt_compat import signal_blocker
-from .watched_store import WatchedStore
 from .review_store import ReviewStore
+from .ui_icon_helpers import (
+    theme_icon_or_fallback,
+    qicon_from_bytes,
+    album_tile_icon_with_strip,
+    icon_with_badge_text_at,
+)
+from .watched_store import WatchedStore
 
 
 class ScanWorker(QObject):
@@ -89,7 +95,6 @@ class ScanWorker(QObject):
                 mp3s = [p for p in list_tracks(al) if p.suffix.lower() == ".mp3"]
                 mp3s_by_album[str(al)] = mp3s
 
-                # Learn expected totaltracks from first mp3 tag if missing
                 try:
                     if self.expected.get(al) <= 0 and mp3s:
                         meta, _ = read_meta_and_length(mp3s[0])
@@ -148,36 +153,29 @@ class MainWindow(QMainWindow):
 
         self._embedded_cache: dict[str, bytes] = {}
 
-        # ---- scan caches ----
         self._cache_ready = False
         self._artist_dirs_cache: list[Path] = []
         self._albums_by_artist_cache: dict[str, list[Path]] = {}
         self._mp3s_by_album_cache: dict[str, list[Path]] = {}
 
-        # cached meta for current album (for uniqueness check)
         self._album_meta_cache: dict[str, TrackMeta] = {}
 
-        # item maps for O(1) updates on toggles
         self._artist_item_by_dir: dict[str, QListWidgetItem] = {}
         self._album_item_by_dir: dict[str, QListWidgetItem] = {}
 
-        # ---- scanning thread objects ----
         self._scan_thread: QThread | None = None
         self._scan_worker: ScanWorker | None = None
 
-        # ---------- Artists grid ----------
         self.artists = QListWidget()
         self._configure_grid(self.artists, icon=196, cell_w=240, cell_h=260)
         self.artists.itemDoubleClicked.connect(self.open_artist)
 
-        # ---------- Albums grid ----------
         self.albums = QListWidget()
         self._configure_grid(self.albums, icon=220, cell_w=250, cell_h=340, icon_h=300)
         self.albums.itemDoubleClicked.connect(self.open_album)
         self.albums.setContextMenuPolicy(Qt.CustomContextMenu)
         self.albums.customContextMenuRequested.connect(self._albums_context_menu)
 
-        # ---------- Tracks table ----------
         self.tracks = QTableWidget(0, 10)
         self.tracks.setHorizontalHeaderLabels(
             ["#", "Title", "Artist", "Album", "Album Artist", "Year", "Genre", "Length", "Size (MB)", "Modified"]
@@ -190,14 +188,12 @@ class MainWindow(QMainWindow):
         self.tracks.verticalHeader().setDefaultSectionSize(118)
         self.tracks.currentCellChanged.connect(self.on_current_cell_changed)
 
-        # ---------- Editor (scrollable) ----------
         self.editor_widget = self._build_track_editor()
         self.editor_scroll = QScrollArea()
         self.editor_scroll.setWidgetResizable(True)
         self.editor_scroll.setFrameShape(QScrollArea.NoFrame)
         self.editor_scroll.setWidget(self.editor_widget)
 
-        # ---------- Split page ----------
         self.tracks_split = QSplitter()
         self.tracks_split.setOrientation(Qt.Horizontal)
         self.tracks_split.addWidget(self.editor_scroll)
@@ -211,7 +207,6 @@ class MainWindow(QMainWindow):
         tracks_layout.setContentsMargins(0, 0, 0, 0)
         tracks_layout.addWidget(self.tracks_split)
 
-        # ---------- Stack ----------
         self.artists_page = QWidget()
         artists_layout = QVBoxLayout(self.artists_page)
         artists_layout.setContentsMargins(18, 14, 18, 18)
@@ -225,12 +220,11 @@ class MainWindow(QMainWindow):
         albums_layout.addWidget(self.albums)
 
         self.stack = QStackedWidget()
-        self.stack.addWidget(self.artists_page)   # PAGE_ARTISTS
-        self.stack.addWidget(self.albums_page)    # PAGE_ALBUMS
-        self.stack.addWidget(self.tracks_page)    # PAGE_TRACKS
+        self.stack.addWidget(self.artists_page)
+        self.stack.addWidget(self.albums_page)
+        self.stack.addWidget(self.tracks_page)
         self.setCentralWidget(self.stack)
 
-        # ---------- Toolbar ----------
         tb = QToolBar("Main")
         tb.setMovable(False)
         self.addToolBar(tb)
@@ -258,7 +252,6 @@ class MainWindow(QMainWindow):
         self.breadcrumb.setTextInteractionFlags(Qt.TextSelectableByMouse)
         tb.addWidget(self.breadcrumb)
 
-        # ---------- Status bar + scan progress ----------
         self.setStatusBar(QStatusBar())
         self.scan_bar = QProgressBar()
         self.scan_bar.setRange(0, 100)
@@ -268,17 +261,11 @@ class MainWindow(QMainWindow):
         self.statusBar().addPermanentWidget(self.scan_bar)
 
         self.status("Starting…")
-
-        # Auto-create & auto-load ~/Audiobook and start scan
         self._auto_load_default_root()
 
-    # -------- status helper --------
     def status(self, msg: str) -> None:
         platform = os.environ.get("QT_QPA_PLATFORM", "auto")
         self.statusBar().showMessage(f"{msg} (Qt: {platform})")
-        dbg("STATUS: %s", msg)
-
-    # ---------------- default root ----------------
 
     @debug_call()
     def _auto_load_default_root(self) -> None:
@@ -291,8 +278,6 @@ class MainWindow(QMainWindow):
 
         self._go_to(self.PAGE_ARTISTS)
         self.start_scan()
-
-    # ---------------- scanning ----------------
 
     @debug_call()
     def start_scan(self) -> None:
@@ -371,15 +356,11 @@ class MainWindow(QMainWindow):
             pass
         super().closeEvent(event)
 
-    # ---------------- UI helpers: trim line edits ----------------
-
     def _trim_lineedit(self, le: QLineEdit) -> None:
         t = le.text()
         s = t.strip()
         if s != t:
             le.setText(s)
-
-    # ---------------- UI builders ----------------
 
     def _build_track_editor(self) -> QWidget:
         w = QWidget()
@@ -503,8 +484,6 @@ class MainWindow(QMainWindow):
         w.setWordWrap(True)
         w.setSpacing(12)
 
-    # ---------------- no rescan on toggles ----------------
-
     def _watched_toggled(self, _state: int) -> None:
         if not self._selected_track_path:
             return
@@ -528,8 +507,6 @@ class MainWindow(QMainWindow):
             self._update_single_album_item(self.current_album_dir)
         if self.current_artist_dir:
             self._update_single_artist_item(self.current_artist_dir)
-
-    # ---------------- counts / cache helpers ----------------
 
     def _album_mp3s(self, album_dir: Path) -> list[Path]:
         if self._cache_ready:
@@ -560,52 +537,8 @@ class MainWindow(QMainWindow):
         gr_count = self.review_store.count_goodreads(mp3s)
         return owned, denom, read_count, gr_count
 
-    # ---------------- icons (covers + overlays) ----------------
-
     def _theme_icon_or_fallback(self, theme_name: str, fallback_sp: QStyle.StandardPixmap) -> QIcon:
-        ico = QIcon.fromTheme(theme_name)
-        if not ico.isNull():
-            return ico
-
-        try:
-            ico = self.style().standardIcon(fallback_sp)
-            if not ico.isNull():
-                return ico
-        except Exception:
-            pass
-
-        pm = QPixmap(128, 128)
-        pm.fill(QColor(60, 66, 75))
-        return QIcon(pm)
-
-    def _draw_tracker_text(
-        self,
-        painter: QPainter,
-        text: str,
-        color: QColor,
-        rect: QRect,
-        *,
-        pt: int = 10,
-    ) -> None:
-        text = (text or "").strip()
-        if not text:
-            return
-
-        painter.save()
-        painter.setRenderHint(QPainter.TextAntialiasing, True)
-
-        font = QFont()
-        font.setBold(True)
-        font.setPointSize(pt)
-        painter.setFont(font)
-
-        painter.setPen(QColor(0, 0, 0, 170))
-        painter.drawText(rect.adjusted(0, 1, 0, 1), Qt.AlignVCenter | Qt.AlignLeft, text)
-
-        painter.setPen(color)
-        painter.drawText(rect, Qt.AlignVCenter | Qt.AlignLeft, text)
-
-        painter.restore()
+        return theme_icon_or_fallback(self.style(), theme_name, fallback_sp)
 
     def _album_tile_icon_with_strip(
         self,
@@ -619,123 +552,29 @@ class MainWindow(QMainWindow):
         gr_line: str,
         gr_color: QColor,
     ) -> QIcon:
-        """
-        Full cover (no crop) + subtle gradient under the cover + 3 text rows:
-
-          Row1: Read X/Y
-          Row2: Own/in Album X/Y
-          Row3: Goodread Review X/Y
-        """
-        w = size.width()
-        h = size.height()
-
-        pad = 10
-        gap = 8
-
-        strip_h = 102
-        strip_rect = QRect(pad, h - pad - strip_h, w - pad * 2, strip_h)
-
-        cover_max_h = strip_rect.top() - pad - gap
-        cover_side = max(10, min(w - pad * 2, cover_max_h))
-        cover_rect = QRect(pad, pad, cover_side, cover_side)
-
-        card_bg = QColor(20, 22, 26, 255)
-        card_border = QColor(65, 70, 82, 160)
-
-        cover_pm = cover_icon.pixmap(cover_side, cover_side)
-        if cover_pm.isNull():
-            cover_pm = self._theme_icon_or_fallback("media-optical", QStyle.SP_DirClosedIcon).pixmap(cover_side, cover_side)
-
-        out = QPixmap(w, h)
-        out.fill(Qt.transparent)
-
-        painter = QPainter(out)
-        painter.setRenderHint(QPainter.Antialiasing, True)
-        painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
-
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(card_bg)
-        painter.drawRoundedRect(QRect(0, 0, w, h), 14, 14)
-
-        painter.setBrush(Qt.NoBrush)
-        painter.setPen(card_border)
-        painter.drawRoundedRect(QRect(1, 1, w - 2, h - 2), 14, 14)
-
-        if cover_pm.width() > 0 and cover_pm.height() > 0:
-            scaled = cover_pm.scaled(cover_rect.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            cx = cover_rect.x() + (cover_rect.width() - scaled.width()) // 2
-            cy = cover_rect.y() + (cover_rect.height() - scaled.height()) // 2
-            painter.drawPixmap(int(cx), int(cy), scaled)
-
-        painter.setPen(QColor(255, 255, 255, 35))
-        painter.setBrush(Qt.NoBrush)
-        painter.drawRoundedRect(cover_rect, 10, 10)
-
-        grad = QLinearGradient(strip_rect.topLeft(), strip_rect.bottomLeft())
-        grad.setColorAt(0.0, QColor(0, 0, 0, 0))
-        grad.setColorAt(0.35, QColor(0, 0, 0, 70))
-        grad.setColorAt(1.0, QColor(0, 0, 0, 150))
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(grad)
-        painter.drawRoundedRect(strip_rect, 12, 12)
-
-        inner = QRect(strip_rect.x() + 10, strip_rect.y() + 8, strip_rect.width() - 20, strip_rect.height() - 16)
-
-        row_h = inner.height() // 3
-        r1 = QRect(inner.x(), inner.y(), inner.width(), row_h)
-        r2 = QRect(inner.x(), inner.y() + row_h, inner.width(), row_h)
-        r3 = QRect(inner.x(), inner.y() + row_h * 2, inner.width(), inner.height() - row_h * 2)
-
-        self._draw_tracker_text(painter, read_line, read_color, r1, pt=10)
-        self._draw_tracker_text(painter, own_line, own_color, r2, pt=10)
-        self._draw_tracker_text(painter, gr_line, gr_color, r3, pt=10)
-
-        painter.end()
-        return QIcon(out)
+        return album_tile_icon_with_strip(
+            self.style(),
+            cover_icon,
+            size,
+            read_line=read_line,
+            read_color=read_color,
+            own_line=own_line,
+            own_color=own_color,
+            gr_line=gr_line,
+            gr_color=gr_color,
+        )
 
     def _icon_with_badge_text_at(
         self, base_icon: QIcon, text: str, size: QSize, badge_color: QColor, side: str = "right"
     ) -> QIcon:
-        text = (text or "").strip()
-        if not text:
-            return base_icon
-
-        pm = base_icon.pixmap(size.width(), size.height())
-        if pm.isNull():
-            pm = self._theme_icon_or_fallback("media-optical", QStyle.SP_DirClosedIcon).pixmap(size.width(), size.height())
-        pm = pm.copy()
-
-        w = pm.width()
-        h = pm.height()
-        painter = QPainter(pm)
-        painter.setRenderHint(QPainter.Antialiasing, True)
-
-        r = max(12, int(min(w, h) * 0.10))
-        d = r * 2
-        m = max(12, int(r * 0.75))
-
-        font = QFont()
-        font.setBold(True)
-        painter.setFont(font)
-
-        fm = painter.fontMetrics()
-        pad = max(8, int(r * 0.55))
-        badge_w = max(d, fm.horizontalAdvance(text) + pad * 2)
-        badge_h = d
-
-        x = m if side == "left" else w - badge_w - m
-        y = m
-
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(badge_color)
-        painter.drawRoundedRect(int(x), int(y), int(badge_w), int(badge_h), r, r)
-
-        painter.setPen(QColor(255, 255, 255))
-        painter.drawText(int(x), int(y), int(badge_w), int(badge_h), Qt.AlignCenter, text)
-        painter.end()
-        return QIcon(pm)
-
-    # ---------------- cover loading ----------------
+        return icon_with_badge_text_at(
+            self.style(),
+            base_icon,
+            text,
+            size,
+            badge_color,
+            side=side,
+        )
 
     def _embedded_bytes(self, track_path: Path) -> bytes | None:
         k = str(track_path)
@@ -747,11 +586,7 @@ class MainWindow(QMainWindow):
         return blob
 
     def _qicon_from_bytes(self, data: bytes, size: QSize) -> QIcon | None:
-        pm = QPixmap()
-        if not pm.loadFromData(data) or pm.isNull():
-            return None
-        pm = pm.scaled(size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        return QIcon(pm)
+        return qicon_from_bytes(data, size)
 
     def _album_icon(self, album_dir: Path, artist_cover: Path | None) -> QIcon:
         cover = find_cover_in_folder(album_dir, preferred_stems=["cover", "folder", "front", "album"])
@@ -804,8 +639,6 @@ class MainWindow(QMainWindow):
 
         return self._theme_icon_or_fallback("audio-x-generic", QStyle.SP_FileIcon)
 
-    # ---------------- list building ----------------
-
     def load_artists(self) -> None:
         if not self.library_root:
             return
@@ -843,8 +676,6 @@ class MainWindow(QMainWindow):
 
         for al in album_dirs:
             self._update_single_album_item(al)
-
-    # ---------------- incremental updates (no rescan) ----------------
 
     def _update_single_artist_item(self, artist_dir: Path) -> None:
         it = self._artist_item_by_dir.get(str(artist_dir))
@@ -930,8 +761,6 @@ class MainWindow(QMainWindow):
         it.setIcon(icon)
         it.setToolTip(f"{album_dir}\n{own_line}\n{read_line}\n{gr_line}")
 
-    # ---------------- open navigation ----------------
-
     def open_artist(self, item: QListWidgetItem) -> None:
         artist_dir = Path(str(item.data(Qt.ItemDataRole.UserRole)))
         if not artist_dir.exists():
@@ -948,8 +777,6 @@ class MainWindow(QMainWindow):
         self.current_album_dir = album_dir
         self.load_tracks(album_dir)
         self._go_to(self.PAGE_TRACKS)
-
-    # ---------------- tracks ----------------
 
     def _row_path(self, row: int) -> Path | None:
         it = self.tracks.item(row, self.COL_NO)
@@ -1096,13 +923,7 @@ class MainWindow(QMainWindow):
             return
         self._select_row_and_load(currentRow)
 
-    # ---------------- uniqueness validation ----------------
-
     def _validate_unique_trackno(self, path: Path, meta: TrackMeta) -> bool:
-        """
-        Block save if another file in the same album already uses (discno, trackno).
-        trackno=0 means "untracked" and is allowed.
-        """
         tno = int(getattr(meta, "trackno", 0) or 0)
         if tno <= 0:
             return True
@@ -1124,8 +945,6 @@ class MainWindow(QMainWindow):
                 return False
 
         return True
-
-    # ---------------- editor IO ----------------
 
     def reload_selected_into_editor(self) -> None:
         if not self._selected_track_path or not self._selected_track_path.exists():
@@ -1218,8 +1037,6 @@ class MainWindow(QMainWindow):
         self._refresh_current_album_after_file_change(new_path)
         self.status(f"Saved tags{' + renamed' if new_path != p else ''}: {new_path.name}")
 
-    # ---------------- cover preview (editor) ----------------
-
     def _set_cover_preview_path(self, img_path: Optional[Path]) -> None:
         if not img_path or not img_path.exists():
             self.cover_label.setPixmap(QPixmap())
@@ -1294,8 +1111,6 @@ class MainWindow(QMainWindow):
 
         self.status("Embedded cover into MP3.")
 
-    # ---------------- navigation ----------------
-
     def pick_library_root(self) -> None:
         folder = QFileDialog.getExistingDirectory(self, "Select your library root (Artist/Album/Tracks)")
         if not folder:
@@ -1324,8 +1139,6 @@ class MainWindow(QMainWindow):
         self.stack.setCurrentIndex(page)
         self.act_back.setEnabled(page != self.PAGE_ARTISTS)
         self.act_set_album_total.setEnabled(page == self.PAGE_ALBUMS)
-
-    # ---------------- expected totals menu ----------------
 
     def _albums_context_menu(self, pos: QPoint) -> None:
         item = self.albums.itemAt(pos)
