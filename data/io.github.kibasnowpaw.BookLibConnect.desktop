@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=BookLibConnect
+Comment=Audiobook library tracker and metadata tool
+Exec=booklibconnect
+Icon=io.github.kibasnowpaw.BookLibConnect
+Terminal=false
+Categories=AudioVideo;Audio;

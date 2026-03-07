@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.kibasnowpaw.BookLibConnect</id>
+  <name>BookLibConnect</name>
+  <summary>Audiobook library tracker and metadata tool</summary>
+  <description>
+    <p>Scan audiobook folders, track your library, and edit metadata.</p>
+  </description>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+</component>

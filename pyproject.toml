@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "booklibconnect"
+version = "0.0.44"
+description = "Audiobook library tracker and metadata tool"
+requires-python = ">=3.10"
+dependencies = [
+  "mutagen>=1.47.0",
+]
+
+[project.scripts]
+booklibconnect = "booklibconnect.app:main"
+
+[tool.setuptools]
+packages = ["booklibconnect"]
+
+[tool.pyside6-project]
+files = ["__main__.py", "album_expected_store.py", "booklibconnect/review_store.py", "booklibconnect/watched_store.py", "helpers.py", "metadata_io.py", "models.py", "naming.py", "qt_compat.py", "ui_mainwindow.py"]
