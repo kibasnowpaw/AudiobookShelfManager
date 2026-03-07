@@ -35,6 +35,7 @@ from PySide6.QtWidgets import (
     QPlainTextEdit,
     QScrollArea,
     QProgressBar,
+    QStyle,
 )
 
 from .album_expected_store import AlbumExpectedStore
@@ -492,12 +493,15 @@ class MainWindow(QMainWindow):
 
     def _configure_grid(self, w: QListWidget, icon: int, cell_w: int, cell_h: int, *, icon_h: int | None = None) -> None:
         w.setViewMode(QListWidget.IconMode)
+        w.setFlow(QListWidget.LeftToRight)
+        w.setWrapping(True)
         w.setResizeMode(QListWidget.Adjust)
         w.setMovement(QListWidget.Static)
         w.setIconSize(QSize(icon, icon_h if icon_h is not None else icon))
         w.setGridSize(QSize(cell_w, cell_h))
         w.setUniformItemSizes(True)
         w.setWordWrap(True)
+        w.setSpacing(12)
 
     # ---------------- no rescan on toggles ----------------
 
@@ -557,6 +561,22 @@ class MainWindow(QMainWindow):
         return owned, denom, read_count, gr_count
 
     # ---------------- icons (covers + overlays) ----------------
+
+    def _theme_icon_or_fallback(self, theme_name: str, fallback_sp: QStyle.StandardPixmap) -> QIcon:
+        ico = QIcon.fromTheme(theme_name)
+        if not ico.isNull():
+            return ico
+
+        try:
+            ico = self.style().standardIcon(fallback_sp)
+            if not ico.isNull():
+                return ico
+        except Exception:
+            pass
+
+        pm = QPixmap(128, 128)
+        pm.fill(QColor(60, 66, 75))
+        return QIcon(pm)
 
     def _draw_tracker_text(
         self,
@@ -624,7 +644,7 @@ class MainWindow(QMainWindow):
 
         cover_pm = cover_icon.pixmap(cover_side, cover_side)
         if cover_pm.isNull():
-            cover_pm = QIcon.fromTheme("media-optical").pixmap(cover_side, cover_side)
+            cover_pm = self._theme_icon_or_fallback("media-optical", QStyle.SP_DirClosedIcon).pixmap(cover_side, cover_side)
 
         out = QPixmap(w, h)
         out.fill(Qt.transparent)
@@ -682,7 +702,7 @@ class MainWindow(QMainWindow):
 
         pm = base_icon.pixmap(size.width(), size.height())
         if pm.isNull():
-            pm = QIcon.fromTheme("media-optical").pixmap(size.width(), size.height())
+            pm = self._theme_icon_or_fallback("media-optical", QStyle.SP_DirClosedIcon).pixmap(size.width(), size.height())
         pm = pm.copy()
 
         w = pm.width()
@@ -749,7 +769,7 @@ class MainWindow(QMainWindow):
         if artist_cover and artist_cover.exists():
             return QIcon(str(artist_cover))
 
-        return QIcon.fromTheme("media-optical")
+        return self._theme_icon_or_fallback("media-optical", QStyle.SP_DirClosedIcon)
 
     def _artist_icon(self, artist_dir: Path) -> QIcon:
         cover = find_cover_in_folder(artist_dir, preferred_stems=["artist", "artist-cover", "cover", "folder", "front"])
@@ -764,7 +784,7 @@ class MainWindow(QMainWindow):
         if albums:
             return self._album_icon(albums[0], artist_cover=None)
 
-        return QIcon.fromTheme("user-identity")
+        return self._theme_icon_or_fallback("user-identity", QStyle.SP_DirIcon)
 
     def _track_icon(self, track_path: Path, album_cover: Path | None, artist_cover: Path | None) -> QIcon:
         side = find_track_sidecar_cover(track_path)
@@ -782,7 +802,7 @@ class MainWindow(QMainWindow):
         if artist_cover and artist_cover.exists():
             return QIcon(str(artist_cover))
 
-        return QIcon.fromTheme("audio-x-generic")
+        return self._theme_icon_or_fallback("audio-x-generic", QStyle.SP_FileIcon)
 
     # ---------------- list building ----------------
 
@@ -797,6 +817,7 @@ class MainWindow(QMainWindow):
         for ad in artist_dirs:
             it = QListWidgetItem(ad.name)
             it.setData(Qt.ItemDataRole.UserRole, str(ad))
+            it.setTextAlignment(Qt.AlignHCenter)
             self.artists.addItem(it)
             self._artist_item_by_dir[str(ad)] = it
 
@@ -816,6 +837,7 @@ class MainWindow(QMainWindow):
         for al in album_dirs:
             it = QListWidgetItem(al.name)
             it.setData(Qt.ItemDataRole.UserRole, str(al))
+            it.setTextAlignment(Qt.AlignHCenter)
             self.albums.addItem(it)
             self._album_item_by_dir[str(al)] = it
 
