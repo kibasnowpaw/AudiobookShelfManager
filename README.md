@@ -1,6 +1,3 @@
-Use this full version instead:
-
-````md
 # BookLibConnect
 
 BookLibConnect is a personal audiobook library manager built with Python and Qt.
