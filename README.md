@@ -1,3 +1,10 @@
+Right. I removed too much.
+
+You wanted the install part kept, just not the uninstall part. And yes, the KDE Flatpak SDK/runtime install should be there too.
+
+Use this version:
+
+````md
 # BookLibConnect
 
 BookLibConnect is a personal audiobook library manager built with Python and Qt.
@@ -82,3 +89,58 @@ This does not mean the app requires the KDE desktop. It only means the Flatpak b
 ```bash
 git clone https://github.com/kibasnowpaw/BookLibConnect.git
 cd BookLibConnect
+````
+
+## Install dependencies
+
+```bash
+sudo apt update
+sudo apt install git flatpak flatpak-builder -y
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+flatpak install flathub org.kde.Sdk//6.10 org.kde.Platform//6.10
+```
+
+## Build and install
+
+```bash
+rm -rf build-dir .flatpak-builder
+flatpak-builder --force-clean build-dir io.github.kibasnowpaw.BookLibConnect.json
+flatpak-builder --install --user --force-clean build-dir io.github.kibasnowpaw.BookLibConnect.json
+```
+
+## Run the app
+
+```bash
+flatpak run --user io.github.kibasnowpaw.BookLibConnect
+```
+
+## Rebuild after changes
+
+```bash
+cd ~/BookLibConnect
+rm -rf build-dir .flatpak-builder
+flatpak-builder --install --user --force-clean build-dir io.github.kibasnowpaw.BookLibConnect.json
+```
+
+## Screenshots
+
+Screenshots can be added here later.
+
+## License
+
+This project is licensed under the MIT License.
+
+```
+
+That keeps:
+clone,
+dependency install,
+KDE SDK/runtime install,
+build and install,
+run,
+rebuild after changes,
+
+and removes the uninstall section.
+
+One small correction I would also make in the text is changing “tracks” to “books or files” later if you want it to sound less like a music app.
+```
