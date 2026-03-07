@@ -1,3 +1,6 @@
+Use this version:
+
+````md
 # BookLibConnect
 
 BookLibConnect is a personal audiobook library manager built with Python and Qt.
@@ -38,28 +41,70 @@ Most existing tools I tried did not fit the way I manage audiobooks.
 
 Some feel more like media players than library managers. This project is focused on library overview, metadata control, series tracking, and clean presentation.
 
+## Library structure
+
+The app expects your library to follow a simple folder structure so it can find authors, series, and the audiobook files correctly.
+
+The expected structure is:
+
+```text
+Library Root/
+├── Author Name/
+│   ├── Album or Series Name/
+│   │   ├── book1.m4b
+│   │   ├── book2.mp3
+│   │   └── cover.jpg
+│   └── Another Album or Series/
+│       └── audiobook.m4b
+└── Another Author/
+    └── Album or Series/
+        └── audiobook.m4b
+````
+
+In other words:
+
+* The top folder should be your main library root
+* Inside that, each author should have their own folder
+* Inside each author folder, each album or series should have its own folder
+* The audiobook files for that album or series should be placed inside that folder
+
+Example:
+
+```text
+Library Root/
+└── Carolyn Keene/
+    └── Nancy Drew Diaries 01 - Curse of the Arctic Star/
+        ├── track01.m4b
+        ├── track02.m4b
+        └── cover.jpg
+```
+
+If the folders are not laid out like this, the app may not detect authors and albums correctly.
+
 ## Planned features
 
 Things I still want to add:
 
-- Search function
-- Better sorting options
-- A-Z sorting
-- Sort by length
-- Sort by newest to oldest
-- Sort by oldest to newest
-- More statistics
-- Track-based statistics
-- Better long-term stats than Goodreads
-- A new name for the project
-- Testing on more systems
+* Search function
+* Better sorting options
+* A-Z sorting
+* Sort by length
+* Sort by newest to oldest
+* Sort by oldest to newest
+* More statistics
+* Track-based statistics
+* Better long-term stats than Goodreads
+* Bigger album cards so long audiobook names do not get cut off as much
+* A new name for the project
+* Testing on more systems
 
 ## Known limitations
 
-- Still in alpha
-- Only tested on Ubuntu Server 25.10 with KDE Plasma and Ubuntu Server 25.10 with GNOME so far
-- The project name will change later
-- Some features and views are still built around older music-style naming and need cleanup
+* Still in alpha
+* Only tested on Ubuntu Server 25.10 with KDE Plasma and Ubuntu Server 25.10 with GNOME so far
+* The project name will change later
+* Some features and views are still built around older music-style naming and need cleanup
+* Long album or audiobook names can still get cut off in the album card view
 
 ## Notes
 
@@ -69,13 +114,13 @@ Back up your library before using metadata editing or rename features.
 
 To build this Flatpak from source you currently need:
 
-- git
-- flatpak
-- flatpak-builder
-- Flathub enabled
-- KDE Flatpak SDK version 6.10
-- KDE Flatpak Platform version 6.10
-- PySide BaseApp version 6.10
+* git
+* flatpak
+* flatpak-builder
+* Flathub enabled
+* KDE Flatpak SDK version 6.10
+* KDE Flatpak Platform version 6.10
+* PySide BaseApp version 6.10
 
 This does not mean the app requires the KDE desktop. It only means the Flatpak build currently targets the KDE Flatpak runtime and PySide BaseApp.
 
@@ -84,7 +129,7 @@ This does not mean the app requires the KDE desktop. It only means the Flatpak b
 ```bash
 git clone https://github.com/kibasnowpaw/BookLibConnect.git
 cd BookLibConnect
-````
+```
 
 ## Install dependencies
 
@@ -150,5 +195,5 @@ This project is licensed under the MIT License.
 
 ```
 
-One small thing I would also change in the actual repo later is the app name and maybe the wording in the UI from `album` and `track` toward `series`, `book`, or `file`. That would make the whole project feel less like a music tool adapted for audiobooks.
+I also added the folder structure part in a way normal people can follow, and I put the album-card issue both under planned features and known limitations so nobody misses it.
 ```
