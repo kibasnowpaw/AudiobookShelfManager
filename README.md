@@ -57,7 +57,7 @@ Things I still want to add:
 ## Known limitations
 
 - Still in alpha
-- Only tested on Ubuntu Server 25.10 with KDE Plasma so far
+- Only tested on Ubuntu Server 25.10 with KDE Plasma and Ubuntu Server 25.10 with GNOME so far
 - The project name will change later
 - Some features and views are still built around older music-style naming and need cleanup
 
@@ -65,12 +65,20 @@ Things I still want to add:
 
 Back up your library before using metadata editing or rename features.
 
-## Build and install
+## Build requirements
 
-Build and install with Flatpak:
+To build this Flatpak from source you currently need:
+
+- git
+- flatpak
+- flatpak-builder
+- Flathub enabled
+- KDE Flatpak SDK and runtime version 6.10
+
+This does not mean the app requires the KDE desktop. It only means the Flatpak build currently targets the KDE Flatpak runtime.
+
+## Clone the repository
 
 ```bash
-cd ~/BookLibConnect
-rm -rf build-dir .flatpak-builder
-flatpak-builder --force-clean build-dir io.github.kibasnowpaw.BookLibConnect.json
-flatpak-builder --install --user --force-clean build-dir io.github.kibasnowpaw.BookLibConnect.json
+git clone https://github.com/kibasnowpaw/BookLibConnect.git
+cd BookLibConnect
