@@ -36,8 +36,7 @@ The app can track review progress from both Goodreads and Audible.
 
 Most existing tools I tried did not fit the way I manage audiobooks.
 
-Some feel more like media players than library managers.
-This project is focused on library overview, metadata control, series tracking, and clean presentation.
+Some feel more like media players than library managers. This project is focused on library overview, metadata control, series tracking, and clean presentation.
 
 ## Planned features
 
@@ -66,10 +65,12 @@ Things I still want to add:
 
 Back up your library before using metadata editing or rename features.
 
-## Screenshots
+## Build and install
 
-Screenshots can be added here later.
+Build and install with Flatpak:
 
-## License
-
-License will be added later.
+```bash
+cd ~/BookLibConnect
+rm -rf build-dir .flatpak-builder
+flatpak-builder --force-clean build-dir io.github.kibasnowpaw.BookLibConnect.json
+flatpak-builder --install --user --force-clean build-dir io.github.kibasnowpaw.BookLibConnect.json
