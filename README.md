@@ -108,7 +108,7 @@ Things I still want to add:
 * Better long-term stats than Goodreads
 * Bigger album cards so long audiobook names do not get cut off as much
 * Remember custom scan locations instead of only defaulting back to `~/audiobook`
-* A new name for the project
+* A new name for the project (Done)
 * Testing on more systems
 
 ## Known limitations
