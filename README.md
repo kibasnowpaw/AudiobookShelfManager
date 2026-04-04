@@ -1,6 +1,6 @@
 # AudiobookShelfManager
 
-BookLibConnect is a personal audiobook library manager built with Python and Qt.
+AudiobookShelfManager is a personal audiobook library manager built with Python and Qt.
 
 It is made for managing large audiobook collections in a way that fits my own workflow better than typical audiobook downloaders or media-player-style tools.
 
@@ -98,15 +98,15 @@ If the folders are not laid out like this, the app may not detect authors and al
 Things I still want to add:
 
 * Search function
-* Better sorting options
-* A-Z sorting
-* Sort by length
-* Sort by newest to oldest
-* Sort by oldest to newest
+* Better sorting options (Done)
+* A-Z sorting (Done)
+* Sort by length (Done)
+* Sort by newest to oldest (Done)
+* Sort by oldest to newest (Done)
 * More statistics
 * Track-based statistics
 * Better long-term stats than Goodreads
-* Bigger album cards so long audiobook names do not get cut off as much
+* Bigger album cards so long audiobook names do not get cut off as much 
 * Remember custom scan locations instead of only defaulting back to `~/audiobook`
 * A new name for the project (Done)
 * Testing on more systems
