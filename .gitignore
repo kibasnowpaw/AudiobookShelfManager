@@ -1,23 +1,27 @@
-cat > README.md << 'EOF'
-# BookLibConnect
-
-Personal audiobook library manager built with Python and Qt.
-EOF
-
-cat > .gitignore << 'EOF'
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.user
-venv/
-.venv/
+*.py[cod]
+*.egg-info/
 build/
 dist/
 build-dir/
 .flatpak-builder/
+venv/
+.venv/
 .qtcreator/
+*.user
+backup/
+*.sqlite
+*.sqlite3
+*.sqlite3-*
+*.db
+scan_index.json
+*.mp3
+*.m4b
+.pytest_cache/
+.ruff_cache/
 *.log
-EOF
-
-touch LICENSE
+*.log.*
+*.sqlite-*
+*.db-*
+.env
+.env.*
