@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt, QRect, QSize
-from PySide6.QtGui import QIcon, QPainter, QColor, QFont, QPixmap, QLinearGradient
+from PySide6.QtGui import QIcon, QPainter, QColor, QFont, QPixmap, QLinearGradient, QFontMetrics
 from PySide6.QtWidgets import QStyle
 
 from .debug_tools import dbg
@@ -45,6 +45,15 @@ def qicon_from_bytes(data: bytes, size: QSize) -> QIcon | None:
     return QIcon(pm)
 
 
+def _elide_text_for_rect(text: str, font: QFont, rect: QRect) -> str:
+    text = (text or "").strip()
+    if not text or rect.width() <= 4:
+        return text
+
+    fm = QFontMetrics(font)
+    return fm.elidedText(text, Qt.ElideRight, max(1, rect.width() - 2))
+
+
 def draw_tracker_text(
     painter: QPainter,
     text: str,
@@ -62,8 +71,10 @@ def draw_tracker_text(
 
     font = QFont()
     font.setBold(True)
-    font.setPointSize(pt)
+    font.setPointSize(max(8, int(pt)))
     painter.setFont(font)
+
+    text = _elide_text_for_rect(text, font, rect)
 
     painter.setPen(QColor(0, 0, 0, 170))
     painter.drawText(rect.adjusted(0, 1, 0, 1), Qt.AlignVCenter | Qt.AlignLeft, text)
@@ -85,14 +96,19 @@ def album_tile_icon_with_strip(
     own_color: QColor,
     gr_line: str,
     gr_color: QColor,
+    strip_h: int = 102,
+    pad: int = 10,
+    gap: int = 8,
+    text_pt: int = 10,
 ) -> QIcon:
     w = max(1, size.width())
     h = max(1, size.height())
 
-    pad = 10
-    gap = 8
+    strip_h = max(40, int(strip_h))
+    pad = max(4, int(pad))
+    gap = max(2, int(gap))
+    text_pt = max(8, int(text_pt))
 
-    strip_h = 102
     strip_rect = QRect(pad, h - pad - strip_h, w - pad * 2, strip_h)
 
     cover_max_h = strip_rect.top() - pad - gap
@@ -144,16 +160,34 @@ def album_tile_icon_with_strip(
     painter.setBrush(grad)
     painter.drawRoundedRect(strip_rect, 12, 12)
 
-    inner = QRect(strip_rect.x() + 10, strip_rect.y() + 8, strip_rect.width() - 20, strip_rect.height() - 16)
+    inner = QRect(
+        strip_rect.x() + 10,
+        strip_rect.y() + 8,
+        strip_rect.width() - 20,
+        strip_rect.height() - 16,
+    )
 
-    row_h = inner.height() // 3
-    r1 = QRect(inner.x(), inner.y(), inner.width(), row_h)
-    r2 = QRect(inner.x(), inner.y() + row_h, inner.width(), row_h)
-    r3 = QRect(inner.x(), inner.y() + row_h * 2, inner.width(), inner.height() - row_h * 2)
+    lines = [
+        (read_line, read_color),
+        (own_line, own_color),
+        (gr_line, gr_color),
+    ]
+    visible = [(text, color) for text, color in lines if (text or "").strip()]
 
-    draw_tracker_text(painter, read_line, read_color, r1, pt=10)
-    draw_tracker_text(painter, own_line, own_color, r2, pt=10)
-    draw_tracker_text(painter, gr_line, gr_color, r3, pt=10)
+    if not visible:
+        painter.end()
+        return QIcon(out)
+
+    row_h = max(1, inner.height() // len(visible))
+    y = inner.y()
+
+    for idx, (text, color) in enumerate(visible):
+        if idx == len(visible) - 1:
+            rect = QRect(inner.x(), y, inner.width(), inner.bottom() - y + 1)
+        else:
+            rect = QRect(inner.x(), y, inner.width(), row_h)
+        draw_tracker_text(painter, text, color, rect, pt=text_pt)
+        y += row_h
 
     painter.end()
     return QIcon(out)

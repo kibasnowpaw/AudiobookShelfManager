@@ -1,214 +1,65 @@
-# AudiobookShelfManager
+# Audiobook Shelf Manager 1.49
 
-AudiobookShelfManager is a personal audiobook library manager built with Python and Qt.
+[Dansk](README.da.md) · [What's new in 1.49](docs/releases/1.49.md) · [GitHub Releases](https://github.com/kibasnowpaw/AudiobookShelfManager/releases)
 
-It is made for managing large audiobook collections in a way that fits my own workflow better than typical audiobook downloaders or media-player-style tools.
+A Linux desktop app for organizing audiobooks you own. Browse **author → series → book**, edit tags and covers, and keep a listening history. It supports **MP3 and unencrypted M4B**. It does not play audio.
 
-## Current status
+## Build and install on Linux
 
-Alpha
+Use Flatpak, flatpak-builder and Flathub. If you are upgrading, close the app first. The Flatpak ID is the same as the renamed 1.48 release; you can back up your personal data under **Settings → Backups**.
 
-The app already does most of what I want, but it is still in active development and not fully finished yet.
-
-## What it currently does
-
-- Browse audiobook collections by author and series
-- Show custom series or album covers in a clean grid view
-- Open a series and view the books or files inside it
-- Edit metadata directly
-- Rename files based on metadata
-- Refresh changed file data after metadata edits and renames
-- Track read status
-- Track ownership within a series
-- Track Goodreads review progress at series level
-- Track Audible and Goodreads review data
-- Store per-track or per-book review information where needed
-- Automatically create and scan a default audiobook folder in the home directory
-
-## Review tracking
-
-The app can track review progress from both Goodreads and Audible.
-
-- Goodreads review progress is shown at the series level, alongside read and owned counts
-- Audible review data is not shown the same way at series level right now
-- Audible review information can be added per track or per book
-
-## Why this exists
-
-Most existing tools I tried did not fit the way I manage audiobooks.
-
-Some feel more like media players than library managers. This project is focused on library overview, metadata control, series tracking, and clean presentation.
-
-## Default library location
-
-When the app starts, it automatically creates a folder called `audiobook` in your home folder if it does not already exist.
-
-Default path:
-
-```text
-~/audiobook
-````
-
-This is the default folder the app scans automatically on startup.
-
-You can also scan audiobook files from other locations, but at the moment the app does not remember custom scan locations between launches. Right now the default `~/audiobook` folder is the one that will always be scanned automatically when the app starts.
-
-## Library structure
-
-The app expects your library to follow a simple folder structure so it can find authors, series, and the audiobook files correctly.
-
-The expected structure is:
-
-```text
-Library Root/
-├── Author Name/
-│   ├── Album or Series Name/
-│   │   ├── book1.mp3
-│   │   ├── book2.mp3
-│   │   └── Folder.jpg
-│   └── Another Album or Series/
-│       └── audiobook.mp3
-└── Another Author/
-    └── Album or Series/
-        └── audiobook.mp3
-```
-
-In other words:
-
-* The top folder should be your main library root
-* Inside that, each author should have their own folder
-* Inside each author folder, each album or series should have its own folder
-* The audiobook files for that album or series should be placed inside that folder
-
-Example:
-
-```text
-Library Root/
-└── Carolyn Keene/
-    └── Nancy Drew Diaries/
-        ├── Curse of the Arctic Star.mp3
-        ├── Strangers on a Train.mp3
-        └── Folder.jpg
-```
-
-If the folders are not laid out like this, the app may not detect authors and albums correctly.
-
-## Planned features
-
-Things I still want to add:
-
-* Search function
-* Better sorting options (Done)
-* A-Z sorting (Done)
-* Sort by length (Done)
-* Sort by newest to oldest (Done)
-* Sort by oldest to newest (Done)
-* More statistics
-* Track-based statistics
-* Better long-term stats than Goodreads
-* Bigger album cards so long audiobook names do not get cut off as much 
-* Remember custom scan locations instead of only defaulting back to `~/audiobook`
-* A new name for the project (Done)
-* Testing on more systems
-
-## Known limitations
-
-* Still in alpha
-* Only tested on Ubuntu Server 25.10 with KDE Plasma and Ubuntu Server 25.10 with GNOME so far
-* The project name will change later
-* Some features and views are still built around older music-style naming and need cleanup
-* Long album or audiobook names can still get cut off in the album card view
-* Custom scan locations are not remembered yet between launches
-* The app always falls back to scanning the default `~/audiobook` folder on startup
-
-## Notes
-
-Back up your library before using metadata editing or rename features.
-
-## Build requirements
-
-To build this Flatpak from source you currently need:
-
-* git
-* flatpak
-* flatpak-builder
-* Flathub enabled
-* KDE Flatpak SDK version 6.10
-* KDE Flatpak Platform version 6.10
-* PySide BaseApp version 6.10
-
-This does not mean the app requires the KDE desktop. It only means the Flatpak build currently targets the KDE Flatpak runtime and PySide BaseApp.
-
-## Clone the repository
+If you use Git, get this exact version:
 
 ```bash
-git clone https://github.com/kibasnowpaw/BookLibConnect.git
-cd BookLibConnect
+git clone --branch V1.49 --depth 1 https://github.com/kibasnowpaw/AudiobookShelfManager.git AudiobookShelfManager-1.49
+cd AudiobookShelfManager-1.49
 ```
 
-## Install dependencies
+If you prefer a download, get **Source code (zip)** from the [1.49 release](https://github.com/kibasnowpaw/AudiobookShelfManager/releases/tag/V1.49), extract it, and open a terminal in the folder containing `pyproject.toml`. From that folder, build and launch:
 
 ```bash
-sudo apt update
-sudo apt install git flatpak flatpak-builder -y
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-flatpak install flathub org.kde.Sdk//6.10 org.kde.Platform//6.10 io.qt.PySide.BaseApp//6.10
+flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+flatpak-builder --user --install --install-deps-from=flathub --force-clean \
+  build-dir io.github.kibasnowpaw.AudiobookShelfManager.json
+flatpak run --user io.github.kibasnowpaw.AudiobookShelfManager
 ```
 
-## Build and install
+After installation it also appears in your applications menu. Flathub supplies the build dependencies; this app is built from the source you downloaded.
+
+## Starting a collection
+
+1. In **Settings → Libraries**, choose a library and add its root folder. Use one folder per author, with a folder for each series underneath, e.g. `Audiobooks/Author/Series/01 - Title.m4b`.
+2. Select **Rescan**. The first scan reads the files; later scans reuse checks for unchanged books. Open a series to see its books. Covers load in the background before you click a book.
+3. Open **Book Details → Edit Metadata** to edit a book, type a rating such as `3.61`, or record where and when you bought it. M4B edits preserve the audio and existing chapters.
+4. Use **Statistics** for listening history, collection progress and year recaps. Select a genre or release year to find matching books. Libraries keep their own history, ratings and settings.
+
+For more on [library and series settings](docs/historik/README_GALLERY_SETTINGS.md), [statistics](docs/historik/README_STATISTICS.md) or [M4B support](docs/historik/README_M4B_SUPPORT.md), see the feature notes. Use the build commands **on this page** for the current release.
+
+## Report a problem
+
+Open **Settings → Diagnostics → Save report…**. Review the text before sharing it in a [GitHub issue](https://github.com/kibasnowpaw/AudiobookShelfManager/issues). Nothing is uploaded automatically. The report includes software versions, counts and timing; it omits book titles, file paths and listening history. If the window doesn't open:
 
 ```bash
-rm -rf build-dir .flatpak-builder
-flatpak-builder --force-clean build-dir io.github.kibasnowpaw.BookLibConnect.json
-flatpak-builder --install --user --force-clean build-dir io.github.kibasnowpaw.BookLibConnect.json
+flatpak run --user io.github.kibasnowpaw.AudiobookShelfManager --diagnostics
 ```
 
-## Run the app
+## Run from Python or contribute
+
+On a Linux desktop with Python 3.10+:
 
 ```bash
-flatpak run --user io.github.kibasnowpaw.BookLibConnect
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install .
+audiobookshelfmanager --version
+audiobookshelfmanager
 ```
 
-## Rebuild after changes
+To run the tests, install ffmpeg (including ffprobe), then run the following in the same virtual environment:
 
 ```bash
-cd ~/BookLibConnect
-rm -rf build-dir .flatpak-builder
-flatpak-builder --install --user --force-clean build-dir io.github.kibasnowpaw.BookLibConnect.json
+python -m pip install -e '.[test]'
+QT_QPA_PLATFORM=offscreen BOOKLIBCONNECT_DEBUG=0 python -m pytest -q
 ```
 
-## Uninstall
-
-```bash
-flatpak uninstall --user io.github.kibasnowpaw.BookLibConnect
-```
-
-## Troubleshooting
-
-If the build fails because of missing Flatpak dependencies, run the dependency install command again:
-
-```bash
-flatpak install flathub org.kde.Sdk//6.10 org.kde.Platform//6.10 io.qt.PySide.BaseApp//6.10
-```
-
-If you want to do a completely clean rebuild:
-
-```bash
-flatpak uninstall --user io.github.kibasnowpaw.BookLibConnect
-rm -rf build-dir .flatpak-builder
-flatpak-builder --force-clean build-dir io.github.kibasnowpaw.BookLibConnect.json
-flatpak-builder --install --user --force-clean build-dir io.github.kibasnowpaw.BookLibConnect.json
-```
-
-## Screenshots
-
-Screenshots can be added here later.
-
-## License
-
-This project is licensed under the MIT License.
-
-```
-
-The main additions are the default `~/audiobook` folder behavior, the fact that it auto-creates and auto-scans it, and that custom scan paths are not remembered yet.
-```
+Released under the [MIT License](LICENSE).

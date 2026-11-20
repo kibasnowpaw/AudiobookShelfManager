@@ -3,19 +3,73 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "booklibconnect"
-version = "0.0.44"
+name = "AudiobookShelfManager"
+version = "1.49"
 description = "Audiobook library tracker and metadata tool"
 requires-python = ">=3.10"
 dependencies = [
   "mutagen>=1.47.0",
+  "PySide6-Essentials>=6.4",
 ]
 
+[project.urls]
+Homepage = "https://github.com/kibasnowpaw/AudiobookShelfManager"
+Releases = "https://github.com/kibasnowpaw/AudiobookShelfManager/releases"
+Issues = "https://github.com/kibasnowpaw/AudiobookShelfManager/issues"
+
 [project.scripts]
-booklibconnect = "booklibconnect.app:main"
+audiobookshelfmanager = "booklibconnect.app:main"
 
 [tool.setuptools]
 packages = ["booklibconnect"]
 
+[project.optional-dependencies]
+test = ["pytest>=7"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
 [tool.pyside6-project]
-files = ["__main__.py", "album_expected_store.py", "booklibconnect/review_store.py", "booklibconnect/watched_store.py", "helpers.py", "metadata_io.py", "models.py", "naming.py", "qt_compat.py", "ui_mainwindow.py"]
+files = [
+  "booklibconnect/__init__.py",
+  "booklibconnect/__main__.py",
+  "booklibconnect/album_expected_store.py",
+  "booklibconnect/app.py",
+  "booklibconnect/atomic_json.py",
+  "booklibconnect/audio_formats.py",
+  "booklibconnect/book_removal.py",
+  "booklibconnect/covers.py",
+  "booklibconnect/db.py",
+  "booklibconnect/debug_tools.py",
+  "booklibconnect/diagnostics.py",
+  "booklibconnect/gallery_cards.py",
+  "booklibconnect/gallery_options.py",
+  "booklibconnect/genre_filter_dialog.py",
+  "booklibconnect/genre_tags.py",
+  "booklibconnect/helpers.py",
+  "booklibconnect/library_settings_store.py",
+  "booklibconnect/listening_history_store.py",
+  "booklibconnect/metadata.py",
+  "booklibconnect/metadata_io.py",
+  "booklibconnect/models.py",
+  "booklibconnect/mp4_metadata.py",
+  "booklibconnect/naming.py",
+  "booklibconnect/paths.py",
+  "booklibconnect/portable_track_state.py",
+  "booklibconnect/purchase_info.py",
+  "booklibconnect/qt_compat.py",
+  "booklibconnect/rating_values.py",
+  "booklibconnect/rating_widgets.py",
+  "booklibconnect/review_store.py",
+  "booklibconnect/run.py",
+  "booklibconnect/scan_index_store.py",
+  "booklibconnect/series_previews.py",
+  "booklibconnect/settings_dialog.py",
+  "booklibconnect/statistics_artwork.py",
+  "booklibconnect/statistics_data.py",
+  "booklibconnect/statistics_page.py",
+  "booklibconnect/statistics_widgets.py",
+  "booklibconnect/ui_icon_helpers.py",
+  "booklibconnect/ui_mainwindow.py",
+  "booklibconnect/watched_store.py",
+]

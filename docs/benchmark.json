@@ -1,0 +1,118 @@
+{
+  "baseline": {
+    "none": {
+      "books": 576,
+      "series": 24,
+      "rounds": 5,
+      "artwork": "none",
+      "seconds": [
+        0.4077,
+        0.4334,
+        0.4418,
+        0.413,
+        0.4167
+      ],
+      "median_seconds": 0.4167,
+      "media_subdirectory_listings": [
+        3492,
+        3492,
+        3492,
+        3492,
+        3492
+      ],
+      "index_writes": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "mixed": {
+      "books": 576,
+      "series": 24,
+      "rounds": 5,
+      "artwork": "mixed",
+      "seconds": [
+        0.4415,
+        0.4399,
+        0.4546,
+        0.4292,
+        0.426
+      ],
+      "median_seconds": 0.4399,
+      "media_subdirectory_listings": [
+        2724,
+        2724,
+        2724,
+        2724,
+        2724
+      ],
+      "index_writes": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "work": {
+    "none": {
+      "books": 576,
+      "series": 24,
+      "rounds": 5,
+      "artwork": "none",
+      "seconds": [
+        0.0362,
+        0.0362,
+        0.0384,
+        0.0359,
+        0.0364
+      ],
+      "median_seconds": 0.0362,
+      "media_subdirectory_listings": [
+        60,
+        60,
+        60,
+        60,
+        60
+      ],
+      "index_writes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "mixed": {
+      "books": 576,
+      "series": 24,
+      "rounds": 5,
+      "artwork": "mixed",
+      "seconds": [
+        0.0412,
+        0.0429,
+        0.0412,
+        0.0427,
+        0.0443
+      ],
+      "median_seconds": 0.0427,
+      "media_subdirectory_listings": [
+        60,
+        60,
+        60,
+        60,
+        60
+      ],
+      "index_writes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  }
+}

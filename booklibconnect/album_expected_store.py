@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import os
+from threading import RLock
+from .atomic_json import write_json_atomic as _write_json_atomic
 from pathlib import Path
 
 from .debug_tools import dbg, dbg_exc, debug_call
@@ -9,17 +11,19 @@ from .debug_tools import dbg, dbg_exc, debug_call
 
 class AlbumExpectedStore:
     @debug_call()
-    def __init__(self) -> None:
+    def __init__(self, config_directory: Path | None = None) -> None:
+        self._config_directory = Path(config_directory) if config_directory is not None else None
+        self._lock = RLock()
         self._data: dict[str, int] = self._load()
 
     @property
     def data(self) -> dict[str, int]:
-        return self._data
+        return dict(self._data)
 
     @debug_call()
     def config_dir(self) -> Path:
         base = Path(os.environ.get("XDG_CONFIG_HOME", str(Path.home() / ".config")))
-        d = base / "booklibconnect"
+        d = self._config_directory if self._config_directory is not None else base / "booklibconnect"
         d.mkdir(parents=True, exist_ok=True)
         return d
 
@@ -52,9 +56,8 @@ class AlbumExpectedStore:
 
     @debug_call()
     def save(self) -> None:
-        p = self.file_path()
-        p.write_text(json.dumps(self._data, indent=2, ensure_ascii=False), encoding="utf-8")
-        dbg("Saved album_expected.json (%d entries) to %s", len(self._data), p)
+        with self._lock:
+            _write_json_atomic(self.file_path(), self._data)
 
     @debug_call()
     def get(self, album_dir: Path) -> int:
@@ -64,13 +67,28 @@ class AlbumExpectedStore:
 
     @debug_call()
     def set(self, album_dir: Path, total: int) -> None:
-        if total <= 0:
-            self._data.pop(str(album_dir), None)
-        else:
-            self._data[str(album_dir)] = int(total)
-        self.save()
+        with self._lock:
+            updated = dict(self._data)
+            if total > 0:
+                updated[str(album_dir)] = int(total)
+            else:
+                updated.pop(str(album_dir), None)
+            self._commit(updated)
+
+    def fill_missing(self, totals: dict[str, int]) -> None:
+        """Commit scan discoveries once, preserving any manually set totals."""
+        with self._lock:
+            updated = dict(self._data)
+            for path, total in totals.items():
+                if total > 0 and updated.get(path, 0) <= 0:
+                    updated[path] = int(total)
+            self._commit(updated)
+
+    def _commit(self, updated: dict[str, int]) -> None:
+        if updated != self._data:
+            _write_json_atomic(self.file_path(), updated)
+            self._data = updated  # Publish only after the atomic write succeeds.
 
     @debug_call()
     def clear(self, album_dir: Path) -> None:
-        self._data.pop(str(album_dir), None)
-        self.save()
+        self.set(album_dir, 0)

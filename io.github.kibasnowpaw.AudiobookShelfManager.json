@@ -1,0 +1,101 @@
+{
+  "id": "io.github.kibasnowpaw.AudiobookShelfManager",
+  "runtime": "org.kde.Platform",
+  "runtime-version": "6.10",
+  "sdk": "org.kde.Sdk",
+  "base": "io.qt.PySide.BaseApp",
+  "base-version": "6.10",
+  "command": "audiobookshelfmanager",
+  "finish-args": [
+    "--share=ipc",
+    "--socket=wayland",
+    "--socket=fallback-x11",
+    "--socket=x11",
+    "--device=dri",
+    "--socket=pulseaudio",
+    "--filesystem=home"
+  ],
+  "modules": [
+    {
+      "name": "python3-mutagen",
+      "buildsystem": "simple",
+      "build-commands": [
+        "python3 -m pip install --no-index --find-links=\".\" --no-build-isolation --no-cache-dir --no-deps --prefix=/app mutagen"
+      ],
+      "sources": [
+        {
+          "type": "file",
+          "url": "https://files.pythonhosted.org/packages/source/m/mutagen/mutagen-1.47.0.tar.gz",
+          "sha256": "719fadef0a978c31b4cf3c956261b3c58b6948b32023078a2117b1de09f0fc99"
+        }
+      ]
+    },
+    {
+      "name": "xcb-util-cursor",
+      "buildsystem": "autotools",
+      "config-opts": [
+        "--disable-static"
+      ],
+      "sources": [
+        {
+          "type": "archive",
+          "url": "https://xcb.freedesktop.org/dist/xcb-util-cursor-0.1.6.tar.xz",
+          "sha256": "fdeb8bd127873519be5cc70dcd0d3b5d33b667877200f9925a59fdcad8f7a933"
+        }
+      ]
+    },
+    {
+      "name": "AudiobookShelfManager",
+      "buildsystem": "simple",
+      "build-commands": [
+        "python3 -m pip install --no-index --no-build-isolation --no-cache-dir --no-deps --prefix=/app .",
+        "install -Dm644 desktop-assets/io.github.kibasnowpaw.AudiobookShelfManager.desktop /app/share/applications/io.github.kibasnowpaw.AudiobookShelfManager.desktop",
+        "install -Dm644 desktop-assets/io.github.kibasnowpaw.AudiobookShelfManager.metainfo.xml /app/share/metainfo/io.github.kibasnowpaw.AudiobookShelfManager.metainfo.xml",
+        "install -Dm644 desktop-assets/io.github.kibasnowpaw.AudiobookShelfManager.svg /app/share/icons/hicolor/scalable/apps/io.github.kibasnowpaw.AudiobookShelfManager.svg"
+      ],
+      "sources": [
+        {
+          "type": "file",
+          "path": "pyproject.toml"
+        },
+        {
+          "type": "file",
+          "path": "LICENSE"
+        },
+        {
+          "type": "dir",
+          "path": "booklibconnect",
+          "dest": "booklibconnect",
+          "skip": [
+            "__pycache__",
+            ".flatpak-builder",
+            "build-dir",
+            ".git",
+            "venv",
+            ".venv",
+            "backup",
+            ".qtcreator"
+          ]
+        },
+        {
+          "type": "file",
+          "path": "data/io.github.kibasnowpaw.AudiobookShelfManager.desktop",
+          "dest": "desktop-assets"
+        },
+        {
+          "type": "file",
+          "path": "data/io.github.kibasnowpaw.AudiobookShelfManager.metainfo.xml",
+          "dest": "desktop-assets"
+        },
+        {
+          "type": "file",
+          "path": "data/icons/hicolor/scalable/apps/io.github.kibasnowpaw.AudiobookShelfManager.svg",
+          "dest": "desktop-assets"
+        }
+      ]
+    }
+  ],
+  "cleanup-commands": [
+    "/app/cleanup-BaseApp.sh"
+  ]
+}
