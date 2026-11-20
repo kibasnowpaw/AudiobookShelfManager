@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Audiobook Shelf Manager
+Comment=Audiobook library tracker and metadata tool
+Exec=audiobookshelfmanager
+Icon=io.github.kibasnowpaw.AudiobookShelfManager
+Terminal=false
+Categories=AudioVideo;Audio;
