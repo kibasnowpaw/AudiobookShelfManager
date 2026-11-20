@@ -1,4 +1,4 @@
-from __future__ import annotations
+"""Audiobook Shelf Manager: the public release version."""
 
-__all__ = ["__version__"]
-__version__ = "0.1.0"
+__version__ = "1.49"
+__build__ = "20261120.series.4"
