@@ -1,21 +1,43 @@
-name: Python syntax check
+name: Linux tests
 
-on:
-  push:
-  pull_request:
+on: [push, pull_request]
+
+permissions:
+  contents: read
 
 jobs:
-  syntax-check:
-    runs-on: ubuntu-latest
-
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      QT_QPA_PLATFORM: offscreen
+      BOOKLIBCONNECT_DEBUG: '0'
     steps:
-      - name: Check out repo
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
         with:
-          python-version: "3.12"
-
-      - name: Compile Python files
-        run: python -m compileall .
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install media and desktop tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg desktop-file-utils libegl1 libgl1 libxkbcommon-x11-0 libxcb-cursor0
+      - name: Install project and test dependencies
+        run: python -m pip install -e '.[test]' 'PySide6-Essentials~=6.10.0'
+      - name: Run tests
+        run: python -m pytest -q
+      - name: Check launcher and desktop entry
+        run: |
+          python - <<'PYTHON'
+          from importlib.metadata import version
+          from pathlib import Path
+          import subprocess
+          from xml.etree import ElementTree as ET
+          from booklibconnect import __version__
+          assert version("AudiobookShelfManager") == __version__
+          assert subprocess.check_output(["audiobookshelfmanager", "--version"], text=True).strip() == f"Audiobook Shelf Manager {__version__}"
+          metadata = ET.parse(next(Path("data").glob("*.metainfo.xml")))
+          assert metadata.find("./releases/release").get("version") == __version__
+          PYTHON
+          desktop-file-validate data/*.desktop
