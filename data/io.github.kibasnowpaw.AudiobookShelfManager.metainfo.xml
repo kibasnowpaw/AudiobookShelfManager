@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.kibasnowpaw.AudiobookShelfManager</id>
+  <name>Audiobook Shelf Manager</name>
+  <launchable type="desktop-id">io.github.kibasnowpaw.AudiobookShelfManager.desktop</launchable>
+  <summary>Audiobook library tracker and metadata tool</summary>
+  <description>
+    <p>Scan audiobook folders, track your library, and edit metadata.</p>
+  </description>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <url type="homepage">https://github.com/kibasnowpaw/AudiobookShelfManager</url>
+  <url type="bugtracker">https://github.com/kibasnowpaw/AudiobookShelfManager/issues</url>
+  <releases>
+    <release version="1.49" date="2026-11-20" type="development">
+      <description>
+        <p>Manage separate MP3 and M4B libraries, rate books to two decimal places, and explore listening history and yearly statistics. Series covers now load before a book is opened.</p>
+      </description>
+    </release>
+  </releases>
+</component>
