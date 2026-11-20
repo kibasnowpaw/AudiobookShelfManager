@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import os
 import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from .debug_tools import dbg, dbg_exc, debug_call
+from .debug_tools import dbg_exc, debug_call
 
 AUDIO_EXTS = {".m4b", ".m4a", ".mp3", ".opus", ".ogg", ".flac", ".wav", ".aac"}
 
@@ -42,31 +43,31 @@ def is_audio(p: Path) -> bool:
         return False
 
 
+def _visible_directories(folder: Path) -> list[Path]:
+    with os.scandir(folder) as entries:
+        paths = [folder / e.name for e in entries if not e.name.startswith(".") and e.is_dir()]
+    return sorted(paths, key=lambda path: path.name.lower())
+
+
 @debug_call()
 def list_artist_dirs(library_root: Path) -> list[Path]:
-    if not library_root.exists():
-        dbg("list_artist_dirs: root missing: %s", library_root)
+    try:
+        return _visible_directories(library_root)
+    except FileNotFoundError:
         return []
-    artists = [p for p in library_root.iterdir() if p.is_dir() and not p.name.startswith(".")]
-    artists.sort(key=lambda x: x.name.lower())
-    dbg("list_artist_dirs: found %d artists under %s", len(artists), library_root)
-    return artists
 
 
 @debug_call()
 def list_album_dirs(artist_dir: Path) -> list[Path]:
-    albums = [p for p in artist_dir.iterdir() if p.is_dir() and not p.name.startswith(".")]
-    albums.sort(key=lambda x: x.name.lower())
-    dbg("list_album_dirs: %s -> %d albums", artist_dir, len(albums))
-    return albums
+    return _visible_directories(artist_dir)
 
 
 @debug_call()
-def list_tracks(album_dir: Path) -> list[Path]:
-    tracks = [p for p in album_dir.iterdir() if is_audio(p)]
-    tracks.sort(key=lambda x: x.name.lower())
-    dbg("list_tracks: %s -> %d tracks", album_dir, len(tracks))
-    return tracks
+def list_tracks(album_dir: Path, extensions=AUDIO_EXTS) -> list[Path]:
+    with os.scandir(album_dir) as entries:
+        tracks = [album_dir / e.name for e in entries
+                  if os.path.splitext(e.name)[1].lower() in extensions and e.is_file()]
+    return sorted(tracks, key=lambda path: path.name.lower())
 
 
 @debug_call()
