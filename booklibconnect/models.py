@@ -12,10 +12,12 @@ class TrackMeta:
     year: str = ""
     genre: str = ""
 
-    # New fields
-    comment: str = ""     # ID3 COMM (good for audiobook "description")
+    # Additional audiobook metadata fields
+    comment: str = ""     # ID3 COMM (description/comment)
     composer: str = ""    # ID3 TCOM
-    discno: int = 0       # ID3 TPOS
+    narrator: str = ""    # ID3 TIPL role "narrator" + TXXX fallback
+    translator: str = ""  # ID3 TIPL role "translator" + TXXX fallback
+    discno: int = 0        # ID3 TPOS
 
     trackno: int = 0
     totaltracks: int = 0
