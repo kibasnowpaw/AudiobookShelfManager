@@ -105,9 +105,24 @@ def _extract_cover_mp3(path: Path) -> Optional[str]:
 
 
 def read_track_meta(path: Path) -> IndexedTrackMeta:
-    # MP3 only
+    if path.suffix.lower() == ".m4b":
+        from .mp4_metadata import read_m4b
+        from .covers import get_embedded_cover_bytes
+        from .purchase_info import release_year
+        metadata, seconds = read_m4b(path)
+        fallback_artist, fallback_album, fallback_title = _guess_from_path(path)
+        blob = get_embedded_cover_bytes(path)
+        cover = _write_cover_bytes(blob, 'png' if blob.startswith(b'\x89PNG') else 'jpg') if blob else None
+        artist = metadata.artist or fallback_artist
+        return IndexedTrackMeta(
+            artist=artist, album=metadata.album or fallback_album,
+            title=metadata.title or fallback_title,
+            album_artist=metadata.albumartist or artist,
+            track_no=metadata.trackno or None, disc_no=metadata.discno or None,
+            year=release_year(metadata.year), duration_sec=int(round(seconds)) if seconds else None,
+            cover_path=cover)
     if path.suffix.lower() != ".mp3":
-        raise RuntimeError("Only MP3 files are supported.")
+        raise RuntimeError("Supported audiobook formats are MP3 and M4B.")
 
     audio = MutagenFile(path)
 
